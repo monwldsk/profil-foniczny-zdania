@@ -523,6 +523,106 @@
       color: #b33128;
     }
 
+    /* Stały, widoczny także podczas analizy tekstu loader. */
+    .analysis-loader {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 1000;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      width: min(410px, calc(100vw - 24px));
+      padding: 19px 20px;
+      border: 1px solid #bad2f5;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 12px 40px rgba(12, 46, 87, .22);
+      color: #163f8f;
+      pointer-events: none;
+    }
+
+    .analysis-loader[hidden] {
+      display: none !important;
+    }
+
+    .analysis-loader__spinner {
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      border: 4px solid #d9e9ff;
+      border-top-color: #0073ce;
+      border-radius: 50%;
+      animation: analysis-spin .75s linear infinite;
+    }
+
+    .analysis-loader__content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .analysis-loader__content strong,
+    .analysis-loader__content small {
+      display: block;
+    }
+
+    .analysis-loader__content strong {
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .analysis-loader__content small {
+      color: #65758b;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .analysis-loader__track {
+      height: 7px;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7f0ff;
+    }
+
+    .analysis-loader__bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2f69d9, #0073ce);
+      transition: width .18s ease;
+    }
+
+    @keyframes analysis-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .65;
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .analysis-loader__spinner {
+        animation-duration: 1.8s;
+      }
+
+      .analysis-loader__bar {
+        transition: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .analysis-loader {
+        right: 12px;
+        bottom: 12px;
+        padding: 15px;
+      }
+    }
+
     .results {
       display: none;
     }
@@ -855,6 +955,49 @@
       max-height: 400px;
     }
 
+    .meter-averages {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .meter-average {
+      padding: 16px 18px;
+      border: 1px solid #dce7f8;
+      border-radius: 12px;
+      background: #f5f9ff;
+    }
+
+    .meter-average__label {
+      display: block;
+      color: #53657a;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .meter-average__value {
+      display: block;
+      margin-top: 7px;
+      color: #163f8f;
+      font-size: clamp(24px, 4vw, 30px);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .meter-average__unit {
+      color: #65758b;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+      .meter-averages {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .meter-chart-note {
       margin-top: 12px;
       padding: 12px 14px;
@@ -1161,6 +1304,17 @@
         <button id="positionCsvButton" type="button" class="ghost" disabled>Eksportuj pozycje CSV</button>
       </div>
       <div id="status" class="status" role="status"></div>
+      <div id="analysisLoader" class="analysis-loader" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span class="analysis-loader__spinner" aria-hidden="true"></span>
+        <div class="analysis-loader__content">
+          <strong id="analysisLoaderMessage">Trwa analiza tekstu…</strong>
+          <small>W przypadku długich tekstów może to chwilę zająć.</small>
+          <div id="analysisProgress" class="analysis-loader__track" role="progressbar"
+            aria-label="Orientacyjny postęp analizy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="analysisProgressBar" class="analysis-loader__bar"></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="results" class="card-shell results" aria-live="polite">
@@ -1189,6 +1343,18 @@
         </p>
         <div class="meter-chart-wrap">
           <canvas id="meterDistributionChart"></canvas>
+        </div>
+        <div class="meter-averages" aria-label="Średnia długość zdania w całym analizowanym tekście">
+          <div class="meter-average">
+            <span class="meter-average__label">Średnia długość zdania w sylabach</span>
+            <strong class="meter-average__value"><span id="meanSentenceSyllables">–</span> <span
+                class="meter-average__unit">sylab</span></strong>
+          </div>
+          <div class="meter-average">
+            <span class="meter-average__label">Średnia długość zdania w słowach</span>
+            <strong class="meter-average__value"><span id="meanSentenceWords">–</span> <span
+                class="meter-average__unit">słów</span></strong>
+          </div>
         </div>
         <div class="meter-chart-note">
           Długości zdań o udziale poniżej 1% są grupowane (i sumowane) jako „Inne”.
@@ -1464,6 +1630,12 @@
         skipI: document.getElementById("skipNonSyllabicI"),
         aggregation: document.getElementById("aggregationMode"),
         status: document.getElementById("status"),
+        analysisLoader: document.getElementById("analysisLoader"),
+        analysisLoaderMessage: document.getElementById("analysisLoaderMessage"),
+        analysisProgress: document.getElementById("analysisProgress"),
+        analysisProgressBar: document.getElementById("analysisProgressBar"),
+        meanSentenceSyllables: document.getElementById("meanSentenceSyllables"),
+        meanSentenceWords: document.getElementById("meanSentenceWords"),
         results: document.getElementById("results"),
         resultsMeta: document.getElementById("resultsMeta"),
         summaryGrid: document.getElementById("summaryGrid"),
@@ -1484,6 +1656,7 @@
         skippedActors: 0,
         removedStageChars: 0,
         charts: [],
+        analysisVersion: 0,
         profileScaleMode: { frontBack: "zoom", height: "zoom" }
       };
 
@@ -1608,43 +1781,107 @@
         if (DOM.input.value.trim()) analyzeCurrentText();
       }
 
-      function analyzeCurrentText() {
+      // Oddajemy sterowanie przeglądarce między partiami, aby loader mógł się
+      // animować, a pasek postępu aktualizować także przy dużych tekstach.
+      function waitForBrowserPaint() {
+        return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      }
+
+      function updateAnalysisLoader(message, progress) {
+        const percentage = Math.max(0, Math.min(100, Math.round(progress)));
+        DOM.analysisLoaderMessage.textContent = message;
+        DOM.analysisProgressBar.style.width = `${percentage}%`;
+        DOM.analysisProgress.setAttribute("aria-valuenow", String(percentage));
+      }
+
+      function setAnalysisBusy(busy) {
+        DOM.analysisLoader.hidden = !busy;
+        DOM.analyze.disabled = busy;
+        DOM.analyze.textContent = busy ? "Analizowanie…" : "Analizuj";
+        DOM.results.setAttribute("aria-busy", String(busy));
+      }
+
+      async function analyzeCurrentText() {
         const text = DOM.input.value.replace(/^\uFEFF/, "");
         if (!text.trim()) { setStatus("Wprowadź tekst do analizy.", true); return; }
 
-        const reconstructed = reconstructSentences(text);
-        const options = { skipI: DOM.skipI.checked };
-        const analyzed = reconstructed.sentences
-          .map((sentence, index) => analyzeSentence(sentence, index + 1, options))
-          .filter(Boolean);
+        // Unieważnij ewentualną wcześniejszą analizę (np. po zmianie opcji).
+        const runId = ++state.analysisVersion;
+        state.analyzed = [];
+        DOM.results.classList.remove("visible");
+        DOM.csv.disabled = true;
+        DOM.positionCsv.disabled = true;
+        DOM.xlsx.disabled = true;
+        destroyCharts();
+        updateAnalysisLoader("Przygotowywanie tekstu…", 0);
+        setAnalysisBusy(true);
+        setStatus("Trwa analiza tekstu…");
 
-        state.analyzed = analyzed;
-        state.sourceLines = reconstructed.sourceLines;
-        state.skippedActors = reconstructed.skippedActors;
-        state.removedStageChars = reconstructed.removedStageChars;
+        try {
+          // Pierwsza klatka daje szansę na pokazanie loadera przed pracą CPU.
+          await waitForBrowserPaint();
+          if (runId !== state.analysisVersion) return;
 
-        if (!analyzed.length) {
-          setStatus("Nie znaleziono zdań zawierających analizowane samogłoski.", true);
-          DOM.results.classList.remove("visible");
-          DOM.csv.disabled = true;
-          DOM.positionCsv.disabled = true;
-          DOM.xlsx.disabled = true;
-          DOM.sentenceTableEndNotice.classList.remove("visible");
-          return;
-        }
+          const reconstructed = reconstructSentences(text);
+          const options = { skipI: DOM.skipI.checked };
+          const totalSentences = reconstructed.sentences.length;
+          const analyzed = [];
+          updateAnalysisLoader(`Analizowanie zdań: 0 z ${totalSentences}`, 5);
+          await waitForBrowserPaint();
+          if (runId !== state.analysisVersion) return;
 
-        renderSentenceTable();
-        DOM.results.classList.add("visible");
+          let lastYield = performance.now();
+          for (let index = 0; index < totalSentences; index++) {
+            const result = analyzeSentence(reconstructed.sentences[index], index + 1, options);
+            if (result) analyzed.push(result);
 
-        requestAnimationFrame(() => {
+            // Kontrolujemy czas pracy zamiast odmierzać sztywną liczbę zdań.
+            if ((index + 1) % 40 === 0 && performance.now() - lastYield > 12) {
+              const progress = 5 + 80 * (index + 1) / totalSentences;
+              updateAnalysisLoader(`Analizowanie zdań: ${index + 1} z ${totalSentences}`, progress);
+              await waitForBrowserPaint();
+              if (runId !== state.analysisVersion) return;
+              lastYield = performance.now();
+            }
+          }
+          if (runId !== state.analysisVersion) return;
+
+          state.analyzed = analyzed;
+          state.sourceLines = reconstructed.sourceLines;
+          state.skippedActors = reconstructed.skippedActors;
+          state.removedStageChars = reconstructed.removedStageChars;
+
+          if (!analyzed.length) {
+            setStatus("Nie znaleziono zdań zawierających analizowane samogłoski.", true);
+            DOM.sentenceTableEndNotice.classList.remove("visible");
+            return;
+          }
+
+          updateAnalysisLoader("Przygotowywanie tabeli zdań…", 88);
+          await waitForBrowserPaint();
+          if (runId !== state.analysisVersion) return;
+          renderSentenceTable();
+          DOM.results.classList.add("visible");
+
+          updateAnalysisLoader("Obliczanie profili i tworzenie wykresów…", 95);
+          await waitForBrowserPaint();
+          if (runId !== state.analysisVersion) return;
           renderAggregateResults();
-          DOM.results.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
 
-        DOM.csv.disabled = false;
-        DOM.positionCsv.disabled = false;
-        DOM.xlsx.disabled = false;
-        setStatus(`Gotowe. Liczba przeanalizowanych zdań: ${analyzed.length}.`);
+          DOM.csv.disabled = false;
+          DOM.positionCsv.disabled = false;
+          DOM.xlsx.disabled = false;
+          setStatus(`Gotowe. Liczba przeanalizowanych zdań: ${analyzed.length}.`);
+          DOM.results.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          if (runId === state.analysisVersion) {
+            console.error("Błąd analizy:", error);
+            setStatus("Wystąpił błąd podczas analizy. Sprawdź konsolę przeglądarki.", true);
+            DOM.results.classList.remove("visible");
+          }
+        } finally {
+          if (runId === state.analysisVersion) setAnalysisBusy(false);
+        }
       }
 
       function reconstructSentences(text) {
@@ -1790,7 +2027,17 @@
           };
         });
 
-        return { number, text, syllables: syllables.length, ranges, segments, syllableObservations };
+        return {
+          number, text, syllables: syllables.length,
+          words: countWords(text),
+          ranges, segments, syllableObservations
+        };
+      }
+
+      // Liczymy wyrazy jako ciągi liter/cyfr, dopuszczając łącznik i apostrof
+      // wewnątrz wyrazu. Nie utożsamiamy liczby wyrazów z liczbą sylab.
+      function countWords(text) {
+        return (String(text || "").match(/[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu) || []).length;
       }
 
       // W tej analizie "sylaba" jest reprezentowana przez swoje samogłoskowe jądro.
@@ -1961,11 +2208,27 @@
         );
 
         renderCharts(profile);
+        renderSentenceAverages(state.analyzed);
 
         DOM.resultsMeta.textContent =
           `Liczba zdań: ${state.analyzed.length}. ` +
           `Profil całego zdania: ${APP_CONFIG.normalizedPositionBins} przedziałów pozycji względnej 0–100%. ` +
           `Sposób liczenia: ${DOM.aggregation.value === "sentence" ? "średnia ze zdań" : "ważony samogłoskami"}.`;
+      }
+
+      const averageNumberFormat = new Intl.NumberFormat("pl-PL", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+      function renderSentenceAverages(rows) {
+        const sentenceCount = rows.length;
+        const syllableSum = rows.reduce((sum, row) => sum + row.syllables, 0);
+        const wordSum = rows.reduce((sum, row) => sum + row.words, 0);
+        DOM.meanSentenceSyllables.textContent = sentenceCount
+          ? averageNumberFormat.format(syllableSum / sentenceCount) : "–";
+        DOM.meanSentenceWords.textContent = sentenceCount
+          ? averageNumberFormat.format(wordSum / sentenceCount) : "–";
       }
 
       function getAggregateProfiles(rows, mode) {
@@ -2852,6 +3115,12 @@
       }
 
       function clearAll() {
+        // Przerwij także trwającą analizę między partiami.
+        state.analysisVersion++;
+        setAnalysisBusy(false);
+        updateAnalysisLoader("Przygotowywanie tekstu…", 0);
+        DOM.meanSentenceSyllables.textContent = "–";
+        DOM.meanSentenceWords.textContent = "–";
         DOM.input.value = "";
         DOM.fileInput.value = "";
         DOM.resultBody.replaceChildren();
