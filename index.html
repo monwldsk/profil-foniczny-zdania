@@ -1,0 +1,2893 @@
+<!doctype html>
+<html lang="pl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script data-goatcounter="https://monikaisyd.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>
+
+  <title>Profil foniczny zdania – analiza pozycyjna samogłosek</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="icon" href="assets/favicon.png" />
+  <style>
+    :root {
+      --color-primary: #002e52;
+      --color-accent: #0073ce;
+      --color-bg: #eeeeee;
+      --color-surface: #ffffff;
+      --color-border: #dddddd;
+      --color-muted: #f4f4f4;
+      --color-tip: #0073ce;
+      --shadow-card: 0 2px 14px rgba(0, 0, 0, .1);
+      --radius-card: 24px;
+      --radius-control: 7px;
+      --max-width: 1200px;
+      --bg: #f7f9fc;
+      --surface: rgba(255, 255, 255, .94);
+      --text: #0b1d37;
+      --muted: #5b6678;
+      --blue: #2f69d9;
+      --blue-dark: #163f8f;
+      --blue-soft: #edf4ff;
+      --line: #dce7f8;
+      --shadow: 0 18px 50px rgba(29, 58, 108, .08);
+      --radius: 22px;
+      --front: #2f69d9;
+      --central: #7a889d;
+      --back: #0b72a8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 22px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(47, 105, 217, .09), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(47, 105, 217, .07), transparent 26%),
+        linear-gradient(180deg, #fbfdff, var(--bg));
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      padding: 9px 20px;
+      border: 2px solid var(--color-primary);
+      border-radius: var(--radius-control);
+      color: #fff;
+      background: var(--color-primary);
+      cursor: pointer;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: var(--color-accent);
+      background: var(--color-accent);
+    }
+
+    button.secondary {
+      border-color: var(--color-accent);
+      background: var(--color-accent);
+    }
+
+    button.ghost {
+      color: var(--blue-dark);
+      border: 1px solid #bfd2e7;
+      background: #f4f8fd;
+    }
+
+    button.ghost:hover {
+      color: var(--blue-dark);
+      background: #eaf2fb;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--color-primary);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -.045em;
+      text-align: center;
+    }
+
+    h1 span {
+      color: var(--blue);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .page {
+      width: min(100%, var(--max-width));
+      margin: 0 auto;
+    }
+
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::after {
+      content: "";
+      width: 110px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 999px;
+    }
+
+    .lead {
+      max-width: 840px;
+      margin: 22px auto 0;
+      /* color: var(--muted); */
+      font-size: 16px;
+      text-align: justify;
+    }
+
+    .card-shell {
+      margin-bottom: 24px;
+      padding: clamp(20px, 4vw, 38px);
+      border: 1px solid rgba(27, 66, 127, .10);
+      border-radius: var(--radius-card);
+      background: rgba(255, 255, 255, .96);
+      box-shadow: var(--shadow-card);
+    }
+
+    .info-strip {
+      margin: 0 auto 28px;
+      padding: 16px 18px;
+      max-width: 950px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f5f9ff;
+      color: #53657a;
+      text-align: center;
+    }
+
+    .vowel-map {
+      width: 100%;
+      max-width: 100%;
+      margin: 26px auto;
+    }
+
+    .vowel-map img {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .vowel-map strong {
+      display: block;
+      color: var(--blue-dark);
+      margin-bottom: 3px;
+    }
+
+    .pilot-study {
+      max-width: 950px;
+      margin: 34px auto 42px;
+      padding: clamp(22px, 3.5vw, 32px);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--blue);
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f4f9ff, #fff 55%);
+      box-shadow: 0 8px 28px rgba(29, 58, 108, .045);
+      color: #445b75;
+    }
+
+    .pilot-study__head {
+      margin-bottom: 18px;
+    }
+
+    .pilot-study__badge {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      color: var(--blue-dark);
+      background: #dcecff;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .pilot-study h2 {
+      margin: 0;
+      text-align: left;
+      font-size: clamp(24px, 3vw, 30px);
+      line-height: 1.15;
+    }
+
+    .pilot-study__content {
+      font-size: 15px;
+      line-height: 1.65;
+      text-align: justify;
+    }
+
+    .pilot-study__content p {
+      margin: 0 0 16px;
+    }
+
+    .pilot-study__content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .pilot-study__figures {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 22px 0;
+    }
+
+    .pilot-study__figure {
+      margin: 0;
+      padding: 14px;
+      border: 1px solid #e2ebf6;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(29, 58, 108, .04);
+    }
+
+    .pilot-study__figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+
+    .drama-input-header {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .drama-input-header p {
+      color: #62748a;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .drama-methods-overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 900px;
+      margin: auto;
+      padding-bottom: 30px;
+    }
+
+    .drama-method-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 19px;
+      border: 1px solid #d7e5f4;
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(245, 250, 255, .95), #fff);
+      box-shadow: 0 5px 16px rgba(29, 74, 119, .035);
+      color: inherit;
+      text-decoration: none;
+      transition: .2s ease;
+    }
+
+    .drama-method-card:hover {
+      transform: translateY(-3px);
+      border-color: #bdd4ec;
+      box-shadow: 0 10px 24px rgba(29, 74, 119, .09);
+    }
+
+    .drama-method-card h3 {
+      margin: 1px 0 5px;
+      font-size: 17px;
+    }
+
+    .drama-method-card p {
+      margin: 0;
+      color: #62748a;
+      font-size: 14px;
+    }
+
+    .drama-method-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #edf5ff;
+      border: 1px solid #d7e7fa;
+      color: #1269c9;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .drama-option {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 190px;
+      padding: 14px;
+      border: 1px solid #cbdced;
+      border-radius: 9px;
+      resize: vertical;
+      background: #fff;
+      color: #10233f;
+      line-height: 1.5;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .drama-or-divider {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      max-width: 600px;
+      margin: 26px auto;
+    }
+
+    .drama-or-divider span {
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+    }
+
+    .drama-or-divider strong {
+      color: #92a0ad;
+      font-size: 11px;
+      letter-spacing: .18em;
+    }
+
+    .file-drop-zone {
+      margin: 10px auto;
+      max-width: 900px;
+      padding: 22px;
+      border: 2px dashed var(--color-accent);
+      border-radius: 10px;
+      text-align: center;
+      color: var(--color-primary);
+      background: #f7fbff;
+      transition: .2s ease;
+    }
+
+    .file-drop-zone.drag-over {
+      background: #e6f3ff;
+      transform: scale(1.005);
+    }
+
+    .library-section {
+      margin: 22px 0 0;
+      padding: 20px;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    .library-search {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-control);
+    }
+
+    .library-no-results {
+      display: none;
+      color: #666;
+    }
+
+    .library-grid {
+      overflow-x: auto;
+      display: flex;
+      gap: 16px;
+      padding: 12px;
+    }
+
+    .library-card {
+      min-width: 188px;
+      max-width: 188px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .10);
+    }
+
+    .library-card img {
+      width: 100%;
+      padding: 0 38px;
+      object-fit: contain;
+    }
+
+    .library-author {
+      font-size: .9em;
+      color: #666;
+    }
+
+    .library-title {
+      font-weight: 700;
+      color: var(--color-primary);
+      min-height: 42px;
+    }
+
+    .library-card button {
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0 0;
+    }
+
+    .option-card {
+      padding: 14px;
+      border: 1px solid #e5edf8;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+    }
+
+    .option-card label {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      font-weight: 700;
+      color: #17385f;
+    }
+
+    .option-card input[type=checkbox] {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      accent-color: #0b72d9;
+      flex: 0 0 auto;
+    }
+
+    .option-card small {
+      display: block;
+      margin-top: 7px;
+      color: #65758b;
+      line-height: 1.45;
+    }
+
+    .option-card select {
+      width: 100%;
+      margin-top: 7px;
+      padding: 8px 9px;
+      border: 1px solid #cbdced;
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 14px 0 0;
+      text-align: center;
+      color: #65758b;
+    }
+
+    .status.error {
+      color: #b33128;
+    }
+
+    .results {
+      display: none;
+    }
+
+    .results.visible {
+      display: block;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .results-header p {
+      margin: 0;
+      color: #65758b;
+    }
+
+    .results-header h2 {
+      text-align: left;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .summary-card {
+      padding: 18px;
+      border: 1px solid #dce7f8;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(29, 58, 108, .04);
+    }
+
+    .summary-card h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .summary-card .score {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin: 13px 0;
+    }
+
+    .score-box {
+      padding: 10px;
+      border-radius: 10px;
+      background: #edf4ff;
+    }
+
+    .score-box span {
+      display: block;
+      color: #65758b;
+      font-size: 11px;
+    }
+
+    .score-box strong {
+      color: #2f69d9;
+      font-size: 20px;
+    }
+
+    .mini-counts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      font-size: 11px;
+      color: #5b6678;
+    }
+
+    .mini-counts div {
+      padding: 7px 5px;
+      border: 1px solid #edf2f8;
+      border-radius: 8px;
+      text-align: center;
+      background: #fbfdff;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .chart-panel {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid #dce7f8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .chart-panel h3 {
+      margin: 0 0 4px;
+    }
+
+    .chart-panel p {
+      margin: 0 0 10px;
+      color: #65758b;
+      font-size: 12px;
+    }
+
+    .chart-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 10px;
+    }
+
+    .chart-scale-note {
+      color: #65758b;
+      font-size: 11px;
+    }
+
+    .scale-toggle {
+      padding: 6px 10px;
+      border-width: 1px;
+      border-color: #bfd2e7;
+      color: #163f8f;
+      background: #f4f8fd;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .scale-toggle:hover {
+      border-color: #a9c7e5;
+      color: #163f8f;
+      background: #eaf2fb;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 340px;
+    }
+
+    .table-panel {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid #dce7f8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .table-panel h3 {
+      margin: 0 0 5px;
+    }
+
+    .table-note {
+      margin: 0 0 12px;
+      color: #65758b;
+      font-size: 12px;
+    }
+
+    .table-scroll {
+      max-height: 520px;
+      overflow: auto;
+      border: 1px solid #e5edf8;
+      border-radius: 10px;
+    }
+
+    .table-end-notice {
+      display: none;
+      padding: 14px 16px;
+      border-top: 1px solid #e5edf8;
+      background: #f5f9ff;
+      color: #53657a;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .table-end-notice.visible {
+      display: block;
+    }
+
+    .table-end-notice button {
+      margin-left: 10px;
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #edf2f8;
+      border-right: 1px solid #edf2f8;
+      text-align: left;
+      vertical-align: top;
+      font-size: 11px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f4f7fb;
+      color: #17385f;
+    }
+
+    tr:hover td {
+      background: #fbfdff;
+    }
+
+    .sentence-text {
+      min-width: 260px;
+      max-width: 420px;
+      white-space: pre-wrap;
+    }
+
+    .segment-cell {
+      min-width: 220px;
+    }
+
+    .segment-fragment {
+      display: block;
+      margin-bottom: 5px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12px;
+      color: #23384f;
+    }
+
+    .segment-counts {
+      color: #65758b;
+      line-height: 1.45;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #edf4ff;
+      color: #2f69d9;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .position-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 4px 0 16px;
+      color: #53657a;
+      font-size: 12px;
+    }
+
+    .position-toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .position-toolbar select {
+      padding: 7px 9px;
+      border: 1px solid #cbdced;
+      border-radius: 7px;
+      background: #fff;
+      color: #17385f;
+    }
+
+    .position-note {
+      max-width: 900px;
+      margin: 0 auto 12px;
+      color: #65758b;
+      font-size: 12px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .method-note {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid #dce7f8;
+      border-radius: 10px;
+      background: #f5f9ff;
+      color: #65758b;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .warning {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid #f0ddad;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #71551c;
+      font-size: 12px;
+    }
+
+    .meter-distribution-panel {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid #dce7f8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .meter-distribution-panel h3 {
+      margin: 0 0 4px;
+    }
+
+    .meter-distribution-panel p {
+      margin: 0 0 10px;
+      color: #65758b;
+      font-size: 12px;
+    }
+
+    .meter-chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      max-height: 400px;
+    }
+
+    .meter-chart-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid #dce7f8;
+      border-radius: 10px;
+      color: #65758b;
+      background: #f5f9ff;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .syllable-profile-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-width: 280px;
+      align-items: flex-start;
+    }
+
+    .syllable-profile-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border: 1px solid #dce7f8;
+      border-radius: 4px;
+      background: #fbfdff;
+      white-space: nowrap;
+    }
+
+    .syllable-profile-item strong {
+      color: #17385f;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .syllable-profile-item small {
+      color: #65758b;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media(max-width:900px) {
+
+      .drama-methods-overview,
+      .options-grid,
+      .summary-grid,
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .results-header {
+        flex-direction: column;
+      }
+
+      .pilot-study__figures {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width:600px) {
+      body {
+        padding: 8px;
+      }
+
+      .hero {
+        padding-inline: 12px;
+      }
+
+      .card-shell {
+        padding: 18px 12px;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+
+      .button-row button {
+        width: 100%;
+      }
+
+      .vowel-map {
+        grid-template-columns: 1fr;
+      }
+
+      .meter-chart-wrap {
+        height: 360px;
+        max-height: 360px;
+      }
+
+      .table-end-notice button {
+        display: block;
+        width: 100%;
+        margin: 10px 0 0;
+      }
+    }
+
+    a {
+      color: var(--blue);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 26px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      text-decoration: underline;
+    }
+
+    .baner-main {
+      width: 100%;
+      max-width: 100%;
+      margin: auto;
+    }
+
+    .baner-main img {
+      display: block;
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .beta-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+
+      width: fit-content;
+      margin: 8px auto 28px;
+      padding: 7px 15px;
+
+      border: 1px solid #b9d7ff;
+      border-radius: 999px;
+
+      background: #f3f8ff;
+      color: #1769c7;
+
+      font-size: 13px;
+      line-height: 1;
+      font-weight: 600;
+
+      box-shadow: 0 3px 12px rgba(47, 105, 217, 0.06);
+    }
+
+    .beta-status__label {
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .beta-status__dot {
+      color: #76a9e8;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+
+    <section class="card-shell">
+      <a class="back-link" href="https://monwldsk.github.io/cyfrowa-analiza-literatury/">← Powrót do listy
+        narzędzi</a>
+      <div class="baner-main"><img src="assets/baner.png" alt="baner"></div>
+
+      <div class="beta-status" role="status" aria-label="Zdanieja beta. Strona w budowie">
+        <span class="beta-status__label">BETA</span>
+        <span class="beta-status__dot">·</span>
+        <span>Strona w budowie</span>
+      </div>
+      <h2 style="margin-top:24px">Po co powstaje ta strona?</h2>
+
+      <div class="lead">
+        <p>
+          Strona stanowi część projektu <a href="https://monwldsk.github.io/cyfrowa-analiza-literatury/" target="_blank"
+            rel="noopener noreferrer">Cyfrowa analiza literatury ↗</a> i powstaje jako narzędzie do badania,
+          czy istnieje zależność między <strong>pozycją sylaby w zdaniu</strong> a <strong>profilem artykulacyjnym
+            samogłoski stanowiącej jej ośrodek</strong>. Analiza obejmuje dwie podstawowe opozycje:
+          <strong>przednia–środkowa–tylna</strong> oraz <strong>niska–średnia–wysoka</strong>.
+        </p>
+        <div class="info-strip">
+          <strong>Diagram samogłoskowy dla języka polskiego</strong>
+          <div class="vowel-map">
+            <img src="assets/trojkat_samogloskowy.png" alt="Model trójkąta samogłoskowego w języku polskim">
+          </div>
+        </div>
+        <p>
+          Tekst jest dzielony na kolejne <strong>zdania</strong>. Dla każdej samogłoski będącej ośrodkiem sylaby
+          obliczana jest pozycja
+          w obrębie zdania. Pozwala to porównywać zdania o różnej długości na wspólnej skali
+          <strong>0–100%</strong>.
+        </p>
+        <p>
+          Narzędzie udostępnia profile średnie, rozkłady samogłosek, analizę kolejnych pozycji
+          od początku i końca zdania oraz kontrolę wyników sylaba po sylabie.
+          Jądra sylab są rozpoznawane przy użyciu reguł ortograficznych; nie jest to pełna
+          transkrypcja fonetyczna ani automatyczna analiza akcentu.
+        </p>
+      </div>
+
+      <section class="pilot-study" aria-labelledby="pilot-study-heading">
+        <div class="pilot-study__head">
+          <div class="pilot-study__badge">Badanie pilotażowe</div>
+          <h2 id="pilot-study-heading">Badanie pilotażowe: profil foniczny zdania</h2>
+        </div>
+        <div class="pilot-study__content">
+          <p>Lorem ipsum</p>
+        </div>
+      </section>
+
+      <div class="drama-input-header">
+        <h2>Wprowadź tekst</h2>
+        <p>Dostępne są 3 sposoby wprowadzenia tekstu:</p>
+      </div>
+      <div class="drama-methods-overview">
+        <a href="#drama-paste" class="drama-method-card">
+          <span class="drama-method-number">01</span>
+          <div>
+            <h3>Wklej tekst</h3>
+            <p>Wprowadź treść bezpośrednio w polu tekstowym.</p>
+          </div>
+        </a>
+        <a href="#drama-file" class="drama-method-card">
+          <span class="drama-method-number">02</span>
+          <div>
+            <h3>Wczytaj plik .txt</h3>
+            <p>Przeciągnij plik lub wybierz go z dysku.</p>
+          </div>
+        </a>
+        <a href="#drama-library" class="drama-method-card">
+          <span class="drama-method-number">03</span>
+          <div>
+            <h3>Wybierz z biblioteki</h3>
+            <p>Wczytaj tekst z katalogu assets/biblioteka.</p>
+          </div>
+        </a>
+      </div>
+
+      <section id="drama-paste">
+        <div class="drama-option"><span class="drama-method-number">01</span>
+          <h3>Wklej tekst</h3>
+        </div>
+        <textarea id="inputText" placeholder="Wklej dowolny tekst do analizy zdań..."></textarea>
+      </section>
+
+      <div class="drama-or-divider"><span></span><strong>LUB</strong><span></span></div>
+      <div class="drama-option"><span class="drama-method-number">02</span>
+        <h3>Wczytaj plik .txt</h3>
+      </div>
+      <section id="drama-file" class="file-drop-zone" aria-label="Wczytywanie pliku tekstowego">
+        <strong>Wybierz plik .txt albo przeciągnij go tutaj</strong><br /><br />
+        <input type="file" id="txtFileInput" accept=".txt,text/plain" />
+      </section>
+
+      <div class="drama-or-divider"><span></span><strong>LUB</strong><span></span></div>
+      <div class="drama-option"><span class="drama-method-number">03</span>
+        <h3>Wybierz z biblioteki</h3>
+      </div>
+      <section id="drama-library" class="library-section" aria-label="Biblioteka tekstów">
+        <h2>Moja biblioteka</h2>
+
+        <input type="search" id="librarySearch" class="library-search"
+          placeholder="Wyszukaj po autorze lub tytule..." />
+        <p id="libraryNoResults" class="library-no-results">Nie znaleziono pasujących tekstów.</p>
+        <p style="font-size:.85em;color:#666">⇄ Przewijaj w poziomie, aby zobaczyć więcej pozycji</p>
+        <div id="libraryGrid" class="library-grid"></div>
+      </section>
+
+      <div class="options-grid">
+        <div class="option-card">
+          <label><input id="skipNonSyllabicI" type="checkbox" checked />Pomijaj [i] w funkcji
+            niezgłoskotwórczej</label>
+          <small>Pomija „i” w sekwencjach: <code>ie, ié, ia, iu, ię, ią, io, ii, iy, ió</code>. Druga samogłoska
+            pozostaje
+            w
+            analizie.</small>
+        </div>
+        <div class="option-card">
+          <label for="aggregationMode">Sposób liczenia profilu średniego</label>
+          <select id="aggregationMode">
+            <option value="sentence" selected>średnia ze zdań (każde zdanie = 1)</option>
+            <option value="vowel">ważona samogłoskami (każda samogłoska = 1)</option>
+          </select>
+          <small>Pierwszy wariant ogranicza wpływ dłuższych zdań; drugi opisuje rozkład wszystkich samogłosek
+            korpusu.</small>
+        </div>
+      </div>
+
+      <div class="button-row" style="margin-top:20px">
+        <button id="analyzeButton" type="button">Analizuj</button>
+        <button id="clearButton" type="button" class="secondary">Wyczyść</button>
+        <button id="csvButton" type="button" class="ghost" disabled>Eksportuj CSV</button>
+        <button id="positionCsvButton" type="button" class="ghost" disabled>Eksportuj pozycje CSV</button>
+      </div>
+      <div id="status" class="status" role="status"></div>
+    </section>
+
+    <section id="results" class="card-shell results" aria-live="polite">
+      <div class="results-header">
+        <div>
+          <h2>Profil pozycyjny samogłosek</h2>
+          <p id="resultsMeta"></p>
+        </div>
+        <span class="tag">0% POCZĄTEK → 100% KONIEC</span>
+      </div>
+
+      <div id="summaryGrid" class="summary-grid hidden"></div>
+
+      <div class="method-note">
+        <strong>Uwaga dotycząca dawnych zapisów:</strong> znak <strong>é</strong> (tzw. e pochylone) w modelu
+        artykulacyjnym pozostaje samogłoską przednią (umownie <strong>−1</strong> na osi
+        przednia–tylna), a na osi wysokości otrzymuje umowną wartość <strong>+0,5</strong>, pośrednią
+        między <strong>e = 0</strong> i <strong>i = +1</strong>. W zestawieniach trójklasowych
+        (wysokie / średnie / niskie) jest przypisywany do klasy średnich; dokładna wartość
+        <strong>+0,5</strong> jest używana w profilach liczbowych i wykresach liniowych.
+      </div>
+
+      <section class="meter-distribution-panel">
+        <h3>Rozkład długości zdań</h3>
+        <p>Procentowy udział zdań o określonej liczbie sylab (liczonej na podstawie rozpoznanych jąder samogłoskowych).
+        </p>
+        <div class="meter-chart-wrap">
+          <canvas id="meterDistributionChart"></canvas>
+        </div>
+        <div class="meter-chart-note">
+          Długości zdań o udziale poniżej 1% są grupowane (i sumowane) jako „Inne”.
+        </div>
+      </section>
+
+      <div class="charts-grid">
+        <section class="chart-panel">
+          <h3>Oś przednia – środkowa – tylna</h3>
+          <p>Profil miejsca artykulacji w przebiegu całego zdania. −1 = przewaga samogłosek przednich, 0 = środkowych /
+            równowaga, +1 = tylnych.</p>
+          <div class="chart-toolbar">
+            <span id="frontBackScaleNote" class="chart-scale-note">Zbliżenie skali wokół 0</span>
+            <button id="frontBackScaleToggle" class="scale-toggle" type="button">Pełna skala −1…+1</button>
+          </div>
+          <div class="chart-wrap"><canvas id="frontBackChart"></canvas></div>
+        </section>
+        <section class="chart-panel">
+          <h3>Oś niska – średnia – wysoka</h3>
+          <p>Profil wysokości samogłosek w przebiegu całego zdania. −1 = przewaga samogłosek niskich, 0 = średnich /
+            równowaga, +1 = wysokich.</p>
+          <div class="chart-toolbar">
+            <span id="heightScaleNote" class="chart-scale-note">Zbliżenie skali wokół 0</span>
+            <button id="heightScaleToggle" class="scale-toggle" type="button">Pełna skala −1…+1</button>
+          </div>
+          <div class="chart-wrap"><canvas id="heightChart"></canvas></div>
+        </section>
+      </div>
+
+      <div class="charts-grid">
+        <section class="chart-panel">
+          <h3>Rozkład miejsca artykulacji</h3>
+          <p>Procentowy skład każdego 10-procentowego odcinka zdania: samogłoski przednie, środkowe i tylne.</p>
+          <div class="chart-wrap"><canvas id="frontBackDistributionChart"></canvas></div>
+        </section>
+        <section class="chart-panel">
+          <h3>Rozkład wysokości</h3>
+          <p>Procentowy skład każdego 10-procentowego odcinka zdania: samogłoski wysokie, średnie i niskie.</p>
+          <div class="chart-wrap"><canvas id="heightDistributionChart"></canvas></div>
+        </section>
+      </div>
+
+      <section class="table-panel">
+        <h3>Koniec: pozycja liczona od końca zdania</h3>
+        <p class="table-note">
+          Wszystkie zdania – niezależnie od swojej długości – są „wyrównane” do prawej strony.
+          <b>−1</b> oznacza ostatnią sylabę zdania, <b>−2</b> przedostatnią, <b>−3</b> trzecią od końca itd.
+          Każde zdanie wnosi najwyżej jedną obserwację
+          do każdej pozycji.
+        </p>
+        <div class="position-toolbar">
+          <label for="clauseDepth">Zakres sylab liczony od końca każdego zdania:
+            <select id="clauseDepth">
+              <option value="4">ostatnie 4 sylaby</option>
+              <option value="6" selected>ostatnie 6 sylab</option>
+              <option value="8">ostatnie 8 sylab</option>
+              <option value="9">ostatnie 9 sylab</option>
+              <option value="10">ostatnie 10 sylab</option>
+              <option value="11">ostatnie 11 sylab</option>
+              <option value="12">ostatnie 12 sylab</option>
+              <option value="13">ostatnie 13 sylab</option>
+            </select>
+          </label>
+          <span>Im dalsza pozycja od końca, tym mniej krótszych zdań może do niej wnieść obserwację.</span>
+        </div>
+        <div class="charts-grid">
+          <section class="chart-panel">
+            <h3>Koniec → miejsce artykulacji</h3>
+            <p>−1 = samogłoski przednie, 0 = środkowe / równowaga, +1 = tylne.</p>
+            <div class="chart-wrap"><canvas id="clauseFrontBackChart"></canvas></div>
+          </section>
+          <section class="chart-panel">
+            <h3>Koniec → wysokość samogłoski</h3>
+            <p>−1 = niskie, 0 = średnie / równowaga, +1 = wysokie.</p>
+            <div class="chart-wrap"><canvas id="clauseHeightChart"></canvas></div>
+          </section>
+        </div>
+        <p class="position-note">
+          To analiza opisowa. Nagły skok na −1, −2 lub −3 wskazuje miejsce warte dalszego testowania,
+          ale sam wykres nie rozstrzyga o istotności statystycznej.
+        </p>
+        <div class="table-scroll" style="max-height:360px">
+          <table>
+            <thead>
+              <tr>
+                <th>Pozycja od końca</th>
+                <th>Zdań (n)</th>
+                <th>Przednie / środkowe / tylne</th>
+                <th>Wysokie / średnie / niskie</th>
+                <th>Profil P↔T</th>
+                <th>Profil N↔W</th>
+              </tr>
+            </thead>
+            <tbody id="clauseResultBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-panel">
+        <h3>Pozycja liczona od początku zdania</h3>
+        <p class="table-note">
+          Wszystkie zdania – niezależnie od swojej długości – są „wyrównane” do lewej strony.
+          <b>+1</b> oznacza pierwszą sylabę zdania, <b>+2</b> drugą, <b>+3</b> trzecią od początku itd.
+          Każde zdanie wnosi najwyżej jedną obserwację
+          do każdej pozycji.
+        </p>
+        <div class="position-toolbar">
+          <label for="onsetDepth">Zakres sylab liczony od początku każdego zdania:
+            <select id="onsetDepth">
+              <option value="4">pierwsze 4 sylaby</option>
+              <option value="6" selected>pierwsze 6 sylab</option>
+              <option value="8">pierwsze 8 sylab</option>
+              <option value="10">pierwsze 10 sylab</option>
+              <option value="11">pierwsze 11 sylab</option>
+              <option value="12">pierwsze 12 sylab</option>
+              <option value="13">pierwsze 13 sylab</option>
+            </select>
+          </label>
+          <span>Im dalsza pozycja od początku, tym mniej krótszych zdań może do niej wnieść obserwację.</span>
+        </div>
+        <div class="charts-grid">
+          <section class="chart-panel">
+            <h3>Początek → miejsce artykulacji</h3>
+            <p>−1 = samogłoski przednie, 0 = środkowe / równowaga, +1 = tylne.</p>
+            <div class="chart-wrap"><canvas id="onsetFrontBackChart"></canvas></div>
+          </section>
+          <section class="chart-panel">
+            <h3>Początek → wysokość samogłoski</h3>
+            <p>−1 = niskie, 0 = średnie / równowaga, +1 = wysokie.</p>
+            <div class="chart-wrap"><canvas id="onsetHeightChart"></canvas></div>
+          </section>
+        </div>
+
+        <div class="table-scroll" style="max-height:360px">
+          <table>
+            <thead>
+              <tr>
+                <th>Pozycja od początku</th>
+                <th>Zdań (n)</th>
+                <th>Przednie / środkowe / tylne</th>
+                <th>Wysokie / średnie / niskie</th>
+                <th>Profil P↔T</th>
+                <th>Profil N↔W</th>
+              </tr>
+            </thead>
+            <tbody id="onsetResultBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-panel">
+        <h3>Kontrola danych – zdanie po zdaniu</h3>
+        <p class="table-note">
+          Dla każdej sylaby pokazano jej samogłoskowe jądro oraz podstawowe cechy artykulacyjne.
+          Skróty: <b>P/Ś/T</b> = przednia/środkowa/tylna, <b>W/Śr/N</b> = wysoka/średnia/niska.
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Zdanie</th>
+                <th>Sylaby</th>
+                <th>Profil sylaba po sylabie</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+          <div id="sentenceTableEndNotice" class="table-end-notice">
+            <span id="sentenceTableEndMessage"></span>
+            <button id="xlsxButton" type="button" class="ghost" disabled>Pobierz pełne dane XLSX</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="method-note">
+        <strong>Reguła normalizacji pozycji:</strong>
+        położenie każdej sylaby jest określane względem długości danego zdania.
+        Pierwsza sylaba otrzymuje pozycję 0%, ostatnia 100%, a sylaby pośrednie
+        rozmieszczane są proporcjonalnie pomiędzy nimi.
+        Dzięki temu profil całego tekstu może obejmować zdania o różnej długości.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const APP_CONFIG = {
+        syllableReplacementRegex: /ie|ié|ia|iu|ię|ią|io|ii|iy|ió/g,
+        nonSyllabicISequences: new Set(["ie", "ié", "ia", "iu", "ię", "ią", "io", "ii", "iy", "ió"]),
+        normalizedPositionBins: 10,
+        maxRenderedSentenceRows: 500,
+        library: [
+          ["Wacław Berent", "Ozimina", "assets/biblioteka/berent-ozimina.txt"],
+          ["Wacław Berent", "Próchno", "assets/biblioteka/berent-prochno.txt"],
+          ["Tadeusz Boy-Żeleński", "Brązownicy", "assets/biblioteka/brazownicy.txt"],
+          ["Karol Irzykowski", "Pałuba", "assets/biblioteka/irzykowski-paluba.txt"],
+          ["Adam Mickiewicz", "Księgi narodu polskiego i pielgrzymstwa polskiego", "assets/biblioteka/ksiegi-narodu-polskiego-i-pielgrzymstwa-polskiego.txt"],
+          ["Zofia Nałkowska", "Granica", "assets/biblioteka/nalkowska-granica.txt"],
+          ["Zofia Nałkowska", "Medaliony", "assets/biblioteka/nalkowska-medaliony.txt"],
+          ["Tadeusz Boy-Żeleński", "Piekło kobiet", "assets/biblioteka/pieklo-kobiet.txt"]
+        ]
+      };
+
+      // Wartości osi: front/back: -1 przednia, 0 środkowa, +1 tylna.
+      // height: +1 wysoka, 0 średnia, -1 niska.
+      // Historyczne é (e pochylone): przednie jak e, wysokość pośrednia między e i i = +0.5.
+      // W rozkładach trójklasowych pozostaje w klasie "mid", natomiast średnie liczone są z height = 0.5.
+      const VOWEL_FEATURES = {
+        a: { normalized: "a", fb: 0, height: -1, fbClass: "central", heightClass: "low" },
+        e: { normalized: "e", fb: -1, height: 0, fbClass: "front", heightClass: "mid" },
+        é: { normalized: "é", fb: -1, height: 0.5, fbClass: "front", heightClass: "mid" },
+        i: { normalized: "i", fb: -1, height: 1, fbClass: "front", heightClass: "high" },
+        y: { normalized: "y", fb: -1, height: 1, fbClass: "front", heightClass: "high" },
+        o: { normalized: "o", fb: 1, height: 0, fbClass: "back", heightClass: "mid" },
+        u: { normalized: "u", fb: 1, height: 1, fbClass: "back", heightClass: "high" },
+        ó: { normalized: "u", fb: 1, height: 1, fbClass: "back", heightClass: "high" },
+        ą: { normalized: "ą", fb: 1, height: 0, fbClass: "back", heightClass: "mid" },
+        ę: { normalized: "ę", fb: -1, height: 0, fbClass: "front", heightClass: "mid" }
+      };
+
+      const SEGMENTS = [
+        { key: "onset", label: "Początek" },
+        { key: "middle", label: "Środek" },
+        { key: "coda", label: "Koniec" }
+      ];
+
+      const METER_COLORS = {
+        1: "hsl(55, 50%, 70%)",
+        2: "hsl(30, 70%, 70%)",
+        3: "hsl(60, 70%, 70%)",
+        4: "hsl(90, 70%, 70%)",
+        5: "hsl(120, 70%, 70%)",
+        6: "hsl(150, 70%, 70%)",
+        7: "hsl(180, 70%, 70%)",
+        8: "hsl(210, 70%, 70%)",
+        9: "hsl(240, 70%, 70%)",
+        10: "hsl(270, 70%, 70%)",
+        11: "hsl(300, 70%, 70%)",
+        12: "hsl(330, 70%, 70%)",
+        13: "hsl(360, 70%, 70%)",
+        14: "hsl(18, 70%, 50%)",
+        15: "hsl(420, 70%, 70%)",
+        16: "hsl(450, 70%, 70%)",
+        17: "hsl(480, 70%, 70%)",
+        18: "hsl(510, 70%, 70%)",
+        19: "hsl(540, 70%, 70%)",
+        20: "hsl(570, 70%, 70%)",
+        21: "hsl(600, 70%, 70%)",
+        22: "hsl(630, 70%, 70%)",
+        23: "hsl(660, 70%, 70%)",
+        24: "hsl(690, 70%, 70%)",
+        25: "hsl(720, 70%, 70%)",
+        26: "hsl(750, 70%, 70%)"
+      };
+
+      const DOM = {
+        input: document.getElementById("inputText"),
+        analyze: document.getElementById("analyzeButton"),
+        clear: document.getElementById("clearButton"),
+        csv: document.getElementById("csvButton"),
+        positionCsv: document.getElementById("positionCsvButton"),
+        xlsx: document.getElementById("xlsxButton"),
+        sentenceTableEndNotice: document.getElementById("sentenceTableEndNotice"),
+        sentenceTableEndMessage: document.getElementById("sentenceTableEndMessage"),
+        fileInput: document.getElementById("txtFileInput"),
+        dropZone: document.getElementById("drama-file"),
+        libraryGrid: document.getElementById("libraryGrid"),
+        librarySearch: document.getElementById("librarySearch"),
+        libraryNoResults: document.getElementById("libraryNoResults"),
+        skipI: document.getElementById("skipNonSyllabicI"),
+        aggregation: document.getElementById("aggregationMode"),
+        status: document.getElementById("status"),
+        results: document.getElementById("results"),
+        resultsMeta: document.getElementById("resultsMeta"),
+        summaryGrid: document.getElementById("summaryGrid"),
+        resultBody: document.getElementById("resultBody"),
+        frontBackScaleToggle: document.getElementById("frontBackScaleToggle"),
+        heightScaleToggle: document.getElementById("heightScaleToggle"),
+        frontBackScaleNote: document.getElementById("frontBackScaleNote"),
+        heightScaleNote: document.getElementById("heightScaleNote"),
+        clauseDepth: document.getElementById("clauseDepth"),
+        clauseResultBody: document.getElementById("clauseResultBody"),
+        onsetDepth: document.getElementById("onsetDepth"),
+        onsetResultBody: document.getElementById("onsetResultBody")
+      };
+
+      const state = {
+        analyzed: [],
+        sourceLines: 0,
+        skippedActors: 0,
+        removedStageChars: 0,
+        charts: [],
+        profileScaleMode: { frontBack: "zoom", height: "zoom" }
+      };
+
+      function init() {
+        renderLibrary(APP_CONFIG.library);
+        DOM.analyze.addEventListener("click", analyzeCurrentText);
+        DOM.clear.addEventListener("click", clearAll);
+        DOM.csv.addEventListener("click", exportCsv);
+        DOM.positionCsv.addEventListener("click", exportPositionCsv);
+        DOM.xlsx.addEventListener("click", exportControlXlsx);
+        DOM.fileInput.addEventListener("change", e => loadTxtFile(e.target.files?.[0]));
+        DOM.librarySearch.addEventListener("input", filterLibrary);
+        DOM.skipI.addEventListener("change", reanalyzeIfPossible);
+        DOM.aggregation.addEventListener("change", () => {
+          if (state.analyzed.length) renderAggregateResults();
+        });
+        DOM.clauseDepth.addEventListener("change", () => {
+          if (state.analyzed.length) renderAggregateResults();
+        });
+        DOM.onsetDepth.addEventListener("change", () => {
+          if (state.analyzed.length) renderAggregateResults();
+        });
+        DOM.frontBackScaleToggle.addEventListener("click", () => toggleProfileScale("frontBack"));
+        DOM.heightScaleToggle.addEventListener("click", () => toggleProfileScale("height"));
+
+        ["dragenter", "dragover"].forEach(name => DOM.dropZone.addEventListener(name, e => {
+          e.preventDefault(); DOM.dropZone.classList.add("drag-over");
+        }));
+        ["dragleave", "drop"].forEach(name => DOM.dropZone.addEventListener(name, e => {
+          e.preventDefault(); DOM.dropZone.classList.remove("drag-over");
+        }));
+        DOM.dropZone.addEventListener("drop", e => loadTxtFile(e.dataTransfer?.files?.[0]));
+      }
+
+      function renderLibrary(items) {
+        DOM.libraryGrid.replaceChildren();
+        const fragment = document.createDocumentFragment();
+        items.forEach(([author, title, path]) => {
+          const article = document.createElement("article");
+          article.className = "library-card";
+          article.dataset.search = `${author} ${title}`.toLocaleLowerCase("pl");
+          article.innerHTML = `
+        <img src="assets/folder2.png" alt="folder icon" />
+        <div class="library-author">${escapeHtml(author)}</div>
+        <div class="library-title">${escapeHtml(title)}</div>
+        <button type="button" class="library-select-button">Wybierz</button>`;
+          article.querySelector("button").addEventListener("click", () => loadLibraryText(path, title));
+          fragment.append(article);
+        });
+        DOM.libraryGrid.append(fragment);
+      }
+
+      function normalizeLibrarySearch(value) {
+        return String(value || "")
+          .toLocaleLowerCase("pl")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/ł/g, "l")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+      }
+
+      function filterLibrary() {
+        const query = normalizeLibrarySearch(DOM.librarySearch.value);
+        const terms = query ? query.split(/\s+/).filter(Boolean) : [];
+        let visible = 0;
+
+        DOM.libraryGrid.querySelectorAll(".library-card").forEach(card => {
+          const haystack = normalizeLibrarySearch(card.dataset.search || card.textContent);
+          const show = terms.length === 0 || terms.every(term => haystack.includes(term));
+
+          // Nie polegamy wyłącznie na atrybucie hidden: .library-card ma display:flex,
+          // więc jawnie wyłączamy kartę z layoutu.
+          card.hidden = !show;
+          card.style.display = show ? "" : "none";
+          card.setAttribute("aria-hidden", show ? "false" : "true");
+          if (show) visible++;
+        });
+
+        DOM.libraryNoResults.style.display = visible ? "none" : "block";
+      }
+
+      async function loadLibraryText(path, title) {
+        setStatus(`Ładuję: ${title}…`);
+        try {
+          // Zachowaj ścieżkę z oryginalnego projektu; dopuszczamy też
+          // wariant „bibioteka” występujący w opisie struktury katalogów.
+          const candidates = [path, path.replace("assets/biblioteka/", "assets/bibioteka/")];
+          let response = null;
+          for (const candidate of [...new Set(candidates)]) {
+            try {
+              const fetched = await fetch(candidate);
+              if (fetched.ok) { response = fetched; break; }
+            } catch (error) { console.debug("Nie udało się odczytać:", candidate, error); }
+          }
+          if (!response) throw new Error("Nie znaleziono pliku w bibliotece");
+          DOM.input.value = await response.text();
+          setStatus(`Załadowano „${title}”. Rozpoczynam analizę…`);
+          analyzeCurrentText();
+        } catch (error) {
+          console.error(error);
+          setStatus("Nie udało się wczytać pliku bibliotecznego. Uruchom stronę przez HTTP/HTTPS i sprawdź ścieżkę assets/biblioteka/ lub assets/bibioteka/.", true);
+        }
+      }
+
+      function loadTxtFile(file) {
+        if (!file) return;
+        if (!/\.txt$/i.test(file.name) && file.type !== "text/plain") {
+          setStatus("Wybierz plik tekstowy .txt.", true); return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          DOM.input.value = String(reader.result || "");
+          setStatus(`Wczytano plik „${file.name}”.`);
+          analyzeCurrentText();
+        };
+        reader.onerror = () => setStatus("Nie udało się odczytać pliku.", true);
+        reader.readAsText(file, "utf-8");
+      }
+
+      function reanalyzeIfPossible() {
+        if (DOM.input.value.trim()) analyzeCurrentText();
+      }
+
+      function analyzeCurrentText() {
+        const text = DOM.input.value.replace(/^\uFEFF/, "");
+        if (!text.trim()) { setStatus("Wprowadź tekst do analizy.", true); return; }
+
+        const reconstructed = reconstructSentences(text);
+        const options = { skipI: DOM.skipI.checked };
+        const analyzed = reconstructed.sentences
+          .map((sentence, index) => analyzeSentence(sentence, index + 1, options))
+          .filter(Boolean);
+
+        state.analyzed = analyzed;
+        state.sourceLines = reconstructed.sourceLines;
+        state.skippedActors = reconstructed.skippedActors;
+        state.removedStageChars = reconstructed.removedStageChars;
+
+        if (!analyzed.length) {
+          setStatus("Nie znaleziono zdań zawierających analizowane samogłoski.", true);
+          DOM.results.classList.remove("visible");
+          DOM.csv.disabled = true;
+          DOM.positionCsv.disabled = true;
+          DOM.xlsx.disabled = true;
+          DOM.sentenceTableEndNotice.classList.remove("visible");
+          return;
+        }
+
+        renderSentenceTable();
+        DOM.results.classList.add("visible");
+
+        requestAnimationFrame(() => {
+          renderAggregateResults();
+          DOM.results.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        DOM.csv.disabled = false;
+        DOM.positionCsv.disabled = false;
+        DOM.xlsx.disabled = false;
+        setStatus(`Gotowe. Liczba przeanalizowanych zdań: ${analyzed.length}.`);
+      }
+
+      function reconstructSentences(text) {
+        const normalized = text.replace(/\r\n?/g, "\n");
+        const stripped = stripStageDirections(normalized);
+        let skippedActors = 0;
+        // Podział na linie służy jedynie usunięciu technicznych oznaczeń
+        // mówców i separatorów; NIE wyznacza granic jednostek analizy.
+        const continuousText = stripped.text.split("\n").filter(rawLine => {
+          const line = rawLine.trim();
+          if (!line || line.startsWith("++")) return false;
+          if (isActorLine(line)) { skippedActors++; return false; }
+          return true;
+        }).join(" ").replace(/\s+/g, " ").trim();
+
+        return {
+          sentences: splitIntoSentences(continuousText),
+          sourceLines: normalized.split("\n").length,
+          skippedActors,
+          removedStageChars: stripped.removedChars
+        };
+      }
+
+      // Granice zdań wyznaczają kropka, pytajnik, wykrzyknik i wielokropek.
+      // Nie rozdzielamy zdań na końcach linii, przy liczbach dziesiętnych
+      // ani przy najczęstszych skrótach i inicjałach.
+      function splitIntoSentences(text) {
+        const source = String(text || "").replace(/\s+/g, " ").trim();
+        if (!source) return [];
+        const sentences = [];
+        let start = 0;
+
+        for (let i = 0; i < source.length; i++) {
+          const symbol = source[i];
+          if (!".!?…".includes(symbol)) continue;
+          if (symbol === "." && shouldIgnoreSentenceDot(source, i)) continue;
+
+          let end = i + 1;
+          while (end < source.length && ".!?…".includes(source[end])) end++;
+          while (end < source.length && /[”’»\"'\)\]]/.test(source[end])) end++;
+          if (end < source.length && !/\s/.test(source[end])) {
+            i = end - 1;
+            continue;
+          }
+
+          // Wielokropki w środku wypowiedzenia często poprzedzają
+          // kontynuację rozpoczynającą się małą literą.
+          if (symbol === "…" || source.slice(i, end).includes("...")) {
+            const remainder = source.slice(end).trimStart();
+            if (/^[a-ząćęłńóśźż]/u.test(remainder)) {
+              i = end - 1;
+              continue;
+            }
+          }
+
+          const sentence = source.slice(start, end).trim();
+          if (sentence) sentences.push(sentence);
+          start = end;
+          i = end - 1;
+        }
+
+        const remainder = source.slice(start).trim();
+        if (remainder) sentences.push(remainder);
+        return sentences;
+      }
+
+      function shouldIgnoreSentenceDot(text, dotIndex) {
+        const before = text.slice(0, dotIndex);
+        const after = text.slice(dotIndex + 1);
+        // Kropka w liczbach 3.14 i 3.000 nie kończy zdania.
+        if (/\d$/.test(before) && /^\d/.test(after)) return true;
+        // Kropki wewnątrz skrótów wieloczłonowych, np. „m.in.”, „p.n.e.”.
+        if (/(?:^|\s)(?:m|p|n)\.$/i.test(before + ".") && /^(?:in|n|e)\./i.test(after)) return true;
+        const match = before.match(/([\p{L}]+)$/u);
+        const token = (match?.[1] || "").toLocaleLowerCase("pl");
+        const alwaysAbbrev = new Set([
+          "dr", "prof", "mgr", "inż", "lek", "ks", "św", "ul", "al", "pl", "im",
+          "nr", "art", "ust", "pkt", "str", "s", "r", "godz", "tel",
+          "tzw", "tj", "tzn", "np", "m", "in", "p", "n", "e", "zob"
+        ]);
+        if (alwaysAbbrev.has(token)) return true;
+        // Skróty na końcu zdania mogą być zakończeniem wypowiedzenia.
+        if (["itd", "itp", "etc"].includes(token)) {
+          return /^[\s]*[a-ząćęłńóśźż]/u.test(after);
+        }
+        // Inicjał w zapisie „A. Mickiewicz”.
+        if (match && match[1].length === 1 && /[A-ZĄĆĘŁŃÓŚŹŻ]/u.test(match[1]) &&
+          /^\s+[A-ZĄĆĘŁŃÓŚŹŻ]/u.test(after)) return true;
+        return false;
+      }
+
+      // Usuwa konwencjonalne didaskalia zapisane między ukośnikami.
+      // Znaki końca linii są zachowane na etapie wstępnego oczyszczania tekstu.
+      function stripStageDirections(text) {
+        let inside = false;
+        let removedChars = 0;
+        let out = "";
+        for (const ch of text) {
+          if (ch === "/") {
+            inside = !inside;
+            removedChars++;
+            out += " ";
+            continue;
+          }
+          if (inside) {
+            if (ch === "\n") out += "\n";
+            else { out += " "; removedChars++; }
+          } else {
+            out += ch;
+          }
+        }
+        return { text: out, removedChars };
+      }
+
+      function isActorLine(line) {
+        // Odróżnij tradycyjny zapis nazwy mówcy od wypowiedzi zapisanej wersalikami.
+        return line === line.toUpperCase() && /\p{L}/u.test(line) &&
+          !/[.!?…]/.test(line) && line.split(/\s+/).length <= 4;
+      }
+
+      function analyzeSentence(text, number, options) {
+        const syllables = getSyllableUnits(text, options);
+        if (!syllables.length) return null;
+        const ranges = splitSyllablesIntoThirds(syllables.length);
+        const segments = {};
+
+        for (const segment of SEGMENTS) {
+          const [start, end] = ranges[segment.key];
+          segments[segment.key] = analyzeSyllableSegment(text, syllables, start, end);
+        }
+
+        const syllableObservations = syllables.map((syllable, index) => {
+          const feature = syllable.feature;
+          return {
+            syllableIndex: index + 1,
+            fromEnd: syllables.length - index,
+            raw: syllable.raw,
+            normalized: feature.normalized,
+            fb: feature.fb,
+            height: feature.height,
+            fbClass: feature.fbClass,
+            heightClass: feature.heightClass
+          };
+        });
+
+        return { number, text, syllables: syllables.length, ranges, segments, syllableObservations };
+      }
+
+      // W tej analizie "sylaba" jest reprezentowana przez swoje samogłoskowe jądro.
+      // Ą, Ę i historyczne É są pełnoprawnymi jądrami sylab i są analizowane zgodnie z własnymi cechami artykulacyjnymi.
+      function getSyllableUnits(text, options) {
+        const units = [];
+        // NFC scala również zapis rozłożony e + znak akcentu w pojedyncze "é".
+        const normalizedText = String(text || "").normalize("NFC");
+        const lowerText = normalizedText.toLocaleLowerCase("pl");
+        let charIndex = 0;
+
+        for (const ch of normalizedText) {
+          const raw = ch.toLocaleLowerCase("pl");
+          const feature = VOWEL_FEATURES[raw];
+          if (feature) {
+            const nonSyllabicI = raw === "i" && options.skipI && isNonSyllabicI(lowerText, charIndex);
+            if (!nonSyllabicI) {
+              units.push({
+                char: ch,
+                raw,
+                feature,
+                charIndex,
+                charLength: ch.length
+              });
+            }
+          }
+          charIndex += ch.length;
+        }
+        return units;
+      }
+
+      function splitSyllablesIntoThirds(n) {
+        if (n <= 0) return { onset: [0, -1], middle: [0, -1], coda: [0, -1] };
+
+        if (n % 3 === 0) {
+          const third = n / 3;
+          return {
+            onset: [0, third - 1],
+            middle: [third, 2 * third - 1],
+            coda: [2 * third, n - 1]
+          };
+        }
+
+        // Jeśli 1/3 przebiega wewnątrz sylaby, ta sylaba rozpoczyna środek.
+        // Jeśli 2/3 przebiega wewnątrz sylaby, ta sylaba kończy środek.
+        // Dzięki temu "problematyczne" sylaby trafiają w całości tylko do części środkowej.
+        const onsetEnd = Math.floor(n / 3) - 1;
+        const middleStart = onsetEnd + 1;
+        const middleEnd = Math.ceil((2 * n) / 3) - 1;
+        const codaStart = middleEnd + 1;
+
+        return {
+          onset: [0, onsetEnd],
+          middle: [middleStart, middleEnd],
+          coda: [codaStart, n - 1]
+        };
+      }
+
+      function analyzeSyllableSegment(text, syllables, start, end) {
+        const counts = emptyCounts();
+        const vowels = [];
+        const selected = [];
+
+        for (let i = start; i <= end && i < syllables.length; i++) {
+          if (i < 0) continue;
+          const syllable = syllables[i];
+          selected.push(syllable);
+
+          const raw = syllable.raw;
+          const feature = syllable.feature;
+          vowels.push({ raw, ...feature });
+          counts.total++;
+          counts[feature.fbClass]++;
+          counts[feature.heightClass]++;
+          counts.raw[raw] = (counts.raw[raw] || 0) + 1;
+          counts.fbSum += feature.fb;
+          counts.heightSum += feature.height;
+        }
+
+        const syllableStart = start >= 0 && start < syllables.length ? start + 1 : null;
+        const syllableEnd = end >= start && end >= 0 ? Math.min(end + 1, syllables.length) : null;
+        const nuclei = selected.map(s => s.raw).join(" · ");
+
+        return {
+          fragment: nuclei,
+          syllableStart,
+          syllableEnd,
+          syllableCount: selected.length,
+          counts,
+          vowels,
+          fbScore: counts.total ? counts.fbSum / counts.total : null,
+          heightScore: counts.total ? counts.heightSum / counts.total : null
+        };
+      }
+
+      function isNonSyllabicI(lowerText, charIndex) {
+        const pair = lowerText.slice(charIndex, charIndex + 2);
+        return APP_CONFIG.nonSyllabicISequences.has(pair);
+      }
+
+      function emptyCounts() {
+        return { total: 0, front: 0, central: 0, back: 0, high: 0, mid: 0, low: 0, fbSum: 0, heightSum: 0, raw: {} };
+      }
+
+      function renderSentenceTable() {
+        const fragment = document.createDocumentFragment();
+        const visibleRows = state.analyzed.slice(0, APP_CONFIG.maxRenderedSentenceRows);
+
+        visibleRows.forEach(row => {
+          const tr = document.createElement("tr");
+
+          const profileHtml = (row.syllableObservations || [])
+            .map(observation => {
+              const fb = getFbClassShort(observation.fbClass);
+              const height = getHeightClassShort(observation.heightClass);
+
+              return `
+                <span class="syllable-profile-item">
+                  <strong>${escapeHtml(observation.raw)}</strong>
+                  <small>${fb}/${height}</small>
+                </span>`;
+            })
+            .join("");
+
+          tr.innerHTML = `
+            <td>${row.number}</td>
+            <td class="sentence-text">${escapeHtml(row.text)}</td>
+            <td><b>${row.syllables}</b></td>
+            <td><div class="syllable-profile-list">${profileHtml}</div></td>`;
+
+          fragment.append(tr);
+        });
+
+        DOM.resultBody.replaceChildren(fragment);
+
+        if (state.analyzed.length > APP_CONFIG.maxRenderedSentenceRows) {
+          DOM.sentenceTableEndMessage.innerHTML =
+            `Wyświetlono pierwsze <b>${APP_CONFIG.maxRenderedSentenceRows}</b> z <b>${state.analyzed.length}</b> zdań. ` +
+            `Pełne dane są dostępne w pliku XLSX.`;
+        } else {
+          DOM.sentenceTableEndMessage.innerHTML =
+            `Wyświetlono wszystkie zdania (<b>${state.analyzed.length}</b>). Pełne dane możesz pobrać także w pliku XLSX.`;
+        }
+        DOM.sentenceTableEndNotice.classList.add("visible");
+      }
+
+      function segmentCell(seg) {
+        const c = seg.counts;
+        const range = seg.syllableCount
+          ? (seg.syllableStart === seg.syllableEnd ? `syl. ${seg.syllableStart}` : `syl. ${seg.syllableStart}–${seg.syllableEnd}`)
+          : "brak sylab";
+        return `<td class="segment-cell">
+      <span class="segment-fragment">${escapeHtml(range)}</span>
+      <div class="segment-counts">
+        jądra: <b>${escapeHtml(seg.fragment || "–")}</b><br>
+        analizowane samogłoski: <b>${c.total}</b><br>
+        P/Ś/T: <b>${c.front}/${c.central}/${c.back}</b><br>
+        W/Śr/N: <b>${c.high}/${c.mid}/${c.low}</b>
+      </div>
+    </td>`;
+      }
+
+      function renderAggregateResults() {
+        const profile = getNormalizedPositionProfile(
+          state.analyzed,
+          APP_CONFIG.normalizedPositionBins,
+          DOM.aggregation.value
+        );
+
+        renderCharts(profile);
+
+        DOM.resultsMeta.textContent =
+          `Liczba zdań: ${state.analyzed.length}. ` +
+          `Profil całego zdania: ${APP_CONFIG.normalizedPositionBins} przedziałów pozycji względnej 0–100%. ` +
+          `Sposób liczenia: ${DOM.aggregation.value === "sentence" ? "średnia ze zdań" : "ważony samogłoskami"}.`;
+      }
+
+      function getAggregateProfiles(rows, mode) {
+        const result = {};
+        SEGMENTS.forEach(({ key }) => {
+          const corpusCounts = emptyCounts();
+          const sentenceFb = [];
+          const sentenceHeight = [];
+
+          rows.forEach(row => {
+            const seg = row.segments[key];
+            addCounts(corpusCounts, seg.counts);
+            if (seg.fbScore !== null) sentenceFb.push(seg.fbScore);
+            if (seg.heightScore !== null) sentenceHeight.push(seg.heightScore);
+          });
+
+          result[key] = {
+            counts: corpusCounts,
+            fbScore: mode === "sentence" ? average(sentenceFb) : safeDivide(corpusCounts.fbSum, corpusCounts.total),
+            heightScore: mode === "sentence" ? average(sentenceHeight) : safeDivide(corpusCounts.heightSum, corpusCounts.total),
+            contributingSentencesFb: sentenceFb.length,
+            contributingSentencesHeight: sentenceHeight.length
+          };
+        });
+        return result;
+      }
+
+      function getClauseProfile(rows, depth) {
+        const maxDepth = Math.max(1, Number(depth) || 6);
+        const points = [];
+
+        for (let fromEnd = maxDepth; fromEnd >= 1; fromEnd--) {
+          const observations = [];
+          rows.forEach(row => {
+            const obs = (row.syllableObservations || []).find(item => item.fromEnd === fromEnd);
+            if (obs) observations.push(obs);
+          });
+
+          const counts = emptyCounts();
+          observations.forEach(observation => addObservationToCounts(counts, observation));
+
+          points.push({
+            fromEnd,
+            label: fromEnd === 1 ? "−1 (ostatnia)" : `−${fromEnd}`,
+            observations: observations.length,
+            counts,
+            fb: observations.length ? counts.fbSum / observations.length : null,
+            height: observations.length ? counts.heightSum / observations.length : null
+          });
+        }
+
+        return points;
+      }
+
+      function getOnsetProfile(rows, depth) {
+        const maxDepth = Math.max(1, Number(depth) || 6);
+        const points = [];
+
+        for (let fromStart = 1; fromStart <= maxDepth; fromStart++) {
+          const observations = [];
+          rows.forEach(row => {
+            const obs = (row.syllableObservations || []).find(item => item.syllableIndex === fromStart);
+            if (obs) observations.push(obs);
+          });
+
+          const counts = emptyCounts();
+          observations.forEach(observation => addObservationToCounts(counts, observation));
+
+          points.push({
+            fromStart,
+            label: fromStart === 1 ? "+1 (pierwsza)" : `+${fromStart}`,
+            observations: observations.length,
+            counts,
+            fb: observations.length ? counts.fbSum / observations.length : null,
+            height: observations.length ? counts.heightSum / observations.length : null
+          });
+        }
+
+        return points;
+      }
+
+      function addObservationToCounts(counts, observation) {
+        counts.total++;
+        counts.fbSum += observation.fb;
+        counts.heightSum += observation.height;
+        if (observation.fbClass === "front") counts.front++;
+        else if (observation.fbClass === "central") counts.central++;
+        else if (observation.fbClass === "back") counts.back++;
+        if (observation.heightClass === "high") counts.high++;
+        else if (observation.heightClass === "mid") counts.mid++;
+        else if (observation.heightClass === "low") counts.low++;
+        counts.raw[observation.raw] = (counts.raw[observation.raw] || 0) + 1;
+      }
+
+      function getRelativeSyllablePosition(observation, syllableCount) {
+        if (syllableCount <= 1) return 0.5;
+        return (observation.syllableIndex - 1) / (syllableCount - 1);
+      }
+
+      function getRelativePositionBinIndex(position, binCount) {
+        return Math.min(binCount - 1, Math.max(0, Math.floor(position * binCount)));
+      }
+
+      function getNormalizedPositionProfile(rows, binCount, mode) {
+        const bins = Array.from({ length: binCount }, (_, index) => ({
+          index,
+          start: index / binCount,
+          end: (index + 1) / binCount,
+          label: `${Math.round((index / binCount) * 100)}–${Math.round(((index + 1) / binCount) * 100)}%`,
+          counts: emptyCounts(),
+          contributingSentences: 0,
+          sentenceFbScores: [],
+          sentenceHeightScores: [],
+          sentenceFrontShares: [],
+          sentenceCentralShares: [],
+          sentenceBackShares: [],
+          sentenceHighShares: [],
+          sentenceMidShares: [],
+          sentenceLowShares: []
+        }));
+
+        rows.forEach(row => {
+          const perSentenceBins = Array.from({ length: binCount }, () => []);
+
+          (row.syllableObservations || []).forEach(observation => {
+            const position = getRelativeSyllablePosition(observation, row.syllables);
+            const binIndex = getRelativePositionBinIndex(position, binCount);
+            perSentenceBins[binIndex].push(observation);
+          });
+
+          perSentenceBins.forEach((observations, binIndex) => {
+            if (!observations.length) return;
+
+            const bin = bins[binIndex];
+            const sentenceCounts = emptyCounts();
+
+            observations.forEach(observation => {
+              addObservationToCounts(bin.counts, observation);
+              addObservationToCounts(sentenceCounts, observation);
+            });
+
+            bin.contributingSentences++;
+            bin.sentenceFbScores.push(sentenceCounts.fbSum / sentenceCounts.total);
+            bin.sentenceHeightScores.push(sentenceCounts.heightSum / sentenceCounts.total);
+            bin.sentenceFrontShares.push(percentage(sentenceCounts.front, sentenceCounts.total));
+            bin.sentenceCentralShares.push(percentage(sentenceCounts.central, sentenceCounts.total));
+            bin.sentenceBackShares.push(percentage(sentenceCounts.back, sentenceCounts.total));
+            bin.sentenceHighShares.push(percentage(sentenceCounts.high, sentenceCounts.total));
+            bin.sentenceMidShares.push(percentage(sentenceCounts.mid, sentenceCounts.total));
+            bin.sentenceLowShares.push(percentage(sentenceCounts.low, sentenceCounts.total));
+          });
+        });
+
+        bins.forEach(bin => {
+          if (mode === "sentence") {
+            bin.fbScore = average(bin.sentenceFbScores);
+            bin.heightScore = average(bin.sentenceHeightScores);
+            bin.distribution = {
+              front: average(bin.sentenceFrontShares) ?? 0,
+              central: average(bin.sentenceCentralShares) ?? 0,
+              back: average(bin.sentenceBackShares) ?? 0,
+              high: average(bin.sentenceHighShares) ?? 0,
+              mid: average(bin.sentenceMidShares) ?? 0,
+              low: average(bin.sentenceLowShares) ?? 0
+            };
+          } else {
+            bin.fbScore = safeDivide(bin.counts.fbSum, bin.counts.total);
+            bin.heightScore = safeDivide(bin.counts.heightSum, bin.counts.total);
+            bin.distribution = {
+              front: percentage(bin.counts.front, bin.counts.total),
+              central: percentage(bin.counts.central, bin.counts.total),
+              back: percentage(bin.counts.back, bin.counts.total),
+              high: percentage(bin.counts.high, bin.counts.total),
+              mid: percentage(bin.counts.mid, bin.counts.total),
+              low: percentage(bin.counts.low, bin.counts.total)
+            };
+          }
+        });
+
+        return bins;
+      }
+
+      function normalizedProfileChartOptions(labels, bounds, profile) {
+        const options = profileChartOptions(labels, bounds);
+
+        options.plugins.tooltip = {
+          callbacks: {
+            title(items) {
+              const index = items?.[0]?.dataIndex;
+              return Number.isInteger(index) ? `Pozycja ${profile[index].label}` : "";
+            },
+            label(ctx) {
+              const value = Number(ctx.raw);
+              return Number.isFinite(value)
+                ? ` profil: ${value >= 0 ? "+" : ""}${value.toFixed(3)}`
+                : " brak danych";
+            },
+            afterLabel(ctx) {
+              const point = profile[ctx.dataIndex];
+              return [
+                ` zdań: ${point?.contributingSentences ?? 0}`,
+                ` samogłosek: ${point?.counts?.total ?? 0}`
+              ];
+            }
+          }
+        };
+
+        options.scales.x.title = {
+          display: true,
+          text: "względna pozycja sylaby w zdaniu (0% = początek, 100% = koniec)"
+        };
+
+        return options;
+      }
+
+      function normalizedDistributionOptions(profile) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const index = items?.[0]?.dataIndex;
+                  return Number.isInteger(index) ? `Pozycja ${profile[index].label}` : "";
+                },
+                label(ctx) {
+                  return ` ${ctx.dataset.label}: ${Number(ctx.raw).toFixed(1)}%`;
+                },
+                afterBody(items) {
+                  const index = items?.[0]?.dataIndex;
+                  const point = Number.isInteger(index) ? profile[index] : null;
+                  return point
+                    ? [`zdań: ${point.contributingSentences}`, `samogłosek: ${point.counts.total}`]
+                    : [];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              title: { display: true, text: "względna pozycja sylaby w zdaniu" }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              min: 0,
+              max: 100,
+              ticks: { callback: value => `${value}%` }
+            }
+          }
+        };
+      }
+
+      function getFbClassShort(value) {
+        if (value === "front") return "P";
+        if (value === "central") return "Ś";
+        if (value === "back") return "T";
+        return "–";
+      }
+
+      function getHeightClassShort(value) {
+        if (value === "high") return "W";
+        if (value === "mid") return "Śr";
+        if (value === "low") return "N";
+        return "–";
+      }
+
+      function addCounts(target, source) {
+        ["total", "front", "central", "back", "high", "mid", "low", "fbSum", "heightSum"].forEach(k => target[k] += source[k]);
+        Object.entries(source.raw).forEach(([k, v]) => target.raw[k] = (target.raw[k] || 0) + v);
+      }
+
+      function renderSummary(aggregate) {
+        DOM.summaryGrid.innerHTML = SEGMENTS.map(({ key, label }) => {
+          const item = aggregate[key], c = item.counts;
+          return `<article class="summary-card">
+        <h3>${label}</h3>
+        <small>${c.total} obserwacji samogłoskowych</small>
+        <div class="score">
+          <div class="score-box"><span>przednia ↔ tylna</span><strong>${fmtScore(item.fbScore)}</strong></div>
+          <div class="score-box"><span>niska ↔ wysoka</span><strong>${fmtScore(item.heightScore)}</strong></div>
+        </div>
+        <div class="mini-counts">
+          <div>przednie<br><b>${pct(c.front, c.total)}</b></div><div>środkowe<br><b>${pct(c.central, c.total)}</b></div><div>tylne<br><b>${pct(c.back, c.total)}</b></div>
+          <div>wysokie<br><b>${pct(c.high, c.total)}</b></div><div>średnie<br><b>${pct(c.mid, c.total)}</b></div><div>niskie<br><b>${pct(c.low, c.total)}</b></div>
+        </div>
+      </article>`;
+        }).join("");
+      }
+
+      function renderCharts(profile) {
+        destroyCharts();
+        renderMeterDistributionChart(state.analyzed);
+
+        const labels = profile.map(point => point.label);
+        const fb = profile.map(point => point.fbScore);
+        const height = profile.map(point => point.heightScore);
+        const finiteFb = fb.filter(Number.isFinite);
+        const finiteHeight = height.filter(Number.isFinite);
+
+        updateScaleControls(finiteFb, finiteHeight);
+
+        state.charts.push(new Chart(document.getElementById("frontBackChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Profil miejsca artykulacji",
+              data: fb,
+              tension: .22,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              borderWidth: 2.5,
+              borderColor: "#2f69d9",
+              backgroundColor: "#2f69d9",
+              spanGaps: false
+            }]
+          },
+          options: normalizedProfileChartOptions(
+            { minLabel: "przednia", midLabel: "środkowa", maxLabel: "tylna" },
+            getProfileScaleBounds(finiteFb, state.profileScaleMode.frontBack),
+            profile
+          )
+        }));
+
+        state.charts.push(new Chart(document.getElementById("heightChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Profil wysokości",
+              data: height,
+              tension: .22,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              borderWidth: 2.5,
+              borderColor: "#0073ce",
+              backgroundColor: "#0073ce",
+              spanGaps: false
+            }]
+          },
+          options: normalizedProfileChartOptions(
+            { minLabel: "niska", midLabel: "średnia", maxLabel: "wysoka" },
+            getProfileScaleBounds(finiteHeight, state.profileScaleMode.height),
+            profile
+          )
+        }));
+
+        state.charts.push(new Chart(document.getElementById("frontBackDistributionChart"), {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              { label: "przednie", backgroundColor: "#2f69d9", data: profile.map(point => point.distribution.front) },
+              { label: "środkowe", backgroundColor: "#9aa8bb", data: profile.map(point => point.distribution.central) },
+              { label: "tylne", backgroundColor: "#0073ce", data: profile.map(point => point.distribution.back) }
+            ]
+          },
+          options: normalizedDistributionOptions(profile)
+        }));
+
+        state.charts.push(new Chart(document.getElementById("heightDistributionChart"), {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              { label: "wysokie", backgroundColor: "#2f69d9", data: profile.map(point => point.distribution.high) },
+              { label: "średnie", backgroundColor: "#7da9dc", data: profile.map(point => point.distribution.mid) },
+              { label: "niskie", backgroundColor: "#b7cbe5", data: profile.map(point => point.distribution.low) }
+            ]
+          },
+          options: normalizedDistributionOptions(profile)
+        }));
+
+        const clause = getClauseProfile(state.analyzed, Number(DOM.clauseDepth.value));
+        renderClauseCharts(clause);
+        renderClauseTable(clause);
+
+        const onset = getOnsetProfile(state.analyzed, Number(DOM.onsetDepth.value));
+        renderOnsetCharts(onset);
+        renderOnsetTable(onset);
+      }
+
+      function renderMeterDistributionChart(rows) {
+        const canvas = document.getElementById("meterDistributionChart");
+        if (!canvas || !rows.length) return;
+
+        const meterCounts = rows.reduce((counts, row) => {
+          const syllables = Number(row.syllables) || 0;
+          if (syllables > 0) {
+            counts[syllables] = (counts[syllables] || 0) + 1;
+          }
+          return counts;
+        }, {});
+
+        const total = Object.values(meterCounts).reduce((sum, count) => sum + count, 0);
+        if (!total) return;
+
+        const labels = [];
+        const values = [];
+        const colors = [];
+        let otherPercentage = 0;
+
+        Object.keys(meterCounts)
+          .sort((a, b) => Number(a) - Number(b))
+          .forEach(meter => {
+            const percentage = (meterCounts[meter] / total) * 100;
+
+            if (percentage < 1) {
+              otherPercentage += percentage;
+              return;
+            }
+
+            labels.push(`${meter} ${Number(meter) === 1 ? "sylaba" : Number(meter) < 5 ? "sylaby" : "sylab"}`);
+            values.push(percentage);
+            colors.push(METER_COLORS[meter] || `hsl(${(Number(meter) * 31) % 360}, 70%, 70%)`);
+          });
+
+        if (otherPercentage > 0) {
+          labels.push("Inne (<1%)");
+          values.push(otherPercentage);
+          colors.push("hsl(120, 70%, 70%)");
+        }
+
+        state.charts.push(new Chart(canvas, {
+          type: "pie",
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: colors,
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 1200,
+              easing: "easeOutCubic",
+              animateRotate: true,
+              animateScale: true
+            },
+            layout: {
+              padding: 8
+            },
+            plugins: {
+              legend: {
+                position: "left",
+                align: "center",
+                title: {
+                  display: true,
+                  text: "Długość zdania",
+                  color: "#555555",
+                  font: { size: 14, weight: "700" },
+                  padding: { bottom: 12 }
+                },
+                labels: {
+                  boxWidth: 30,
+                  boxHeight: 17,
+                  padding: 13,
+                  color: "#56677d",
+                  font: { size: 15 }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: context => `${context.label}: ${Number(context.raw).toFixed(2)}%`
+                }
+              }
+            }
+          }
+        }));
+      }
+
+      function renderClauseCharts(profile) {
+        const labels = profile.map(point => point.label);
+        const fbValues = profile.map(point => point.fb).filter(Number.isFinite);
+        const heightValues = profile.map(point => point.height).filter(Number.isFinite);
+        const fbBounds = getProfileScaleBounds(fbValues, "zoom");
+        const heightBounds = getProfileScaleBounds(heightValues, "zoom");
+
+        state.charts.push(new Chart(document.getElementById("clauseFrontBackChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Koniec zdania — miejsce artykulacji",
+              data: profile.map(point => point.fb),
+              tension: .18, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5,
+              borderColor: "#2f69d9", backgroundColor: "#2f69d9", spanGaps: false
+            }]
+          },
+          options: clauseChartOptions(
+            { minLabel: "przednia", midLabel: "środkowa", maxLabel: "tylna" },
+            fbBounds,
+            profile
+          )
+        }));
+
+        state.charts.push(new Chart(document.getElementById("clauseHeightChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Koniec zdania — wysokość",
+              data: profile.map(point => point.height),
+              tension: .18, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5,
+              borderColor: "#0073ce", backgroundColor: "#0073ce", spanGaps: false
+            }]
+          },
+          options: clauseChartOptions(
+            { minLabel: "niska", midLabel: "średnia", maxLabel: "wysoka" },
+            heightBounds,
+            profile
+          )
+        }));
+      }
+
+      function renderClauseTable(profile) {
+        DOM.clauseResultBody.innerHTML = profile.slice().reverse().map(point => {
+          const c = point.counts;
+          return `<tr>
+            <td><b>${escapeHtml(point.label)}</b></td>
+            <td>${point.observations}</td>
+            <td>P ${pct(c.front, c.total)} · Ś ${pct(c.central, c.total)} · T ${pct(c.back, c.total)}</td>
+            <td>W ${pct(c.high, c.total)} · Śr ${pct(c.mid, c.total)} · N ${pct(c.low, c.total)}</td>
+            <td>${fmtScore(point.fb)}</td>
+            <td>${fmtScore(point.height)}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      function renderOnsetCharts(profile) {
+        const labels = profile.map(point => point.label);
+        const fbValues = profile.map(point => point.fb).filter(Number.isFinite);
+        const heightValues = profile.map(point => point.height).filter(Number.isFinite);
+        const fbBounds = getProfileScaleBounds(fbValues, "zoom");
+        const heightBounds = getProfileScaleBounds(heightValues, "zoom");
+
+        state.charts.push(new Chart(document.getElementById("onsetFrontBackChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Początek zdania — miejsce artykulacji",
+              data: profile.map(point => point.fb),
+              tension: .18, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5,
+              borderColor: "#2f69d9", backgroundColor: "#2f69d9", spanGaps: false
+            }]
+          },
+          options: onsetChartOptions(
+            { minLabel: "przednia", midLabel: "środkowa", maxLabel: "tylna" },
+            fbBounds,
+            profile
+          )
+        }));
+
+        state.charts.push(new Chart(document.getElementById("onsetHeightChart"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Początek zdania — wysokość",
+              data: profile.map(point => point.height),
+              tension: .18, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5,
+              borderColor: "#0073ce", backgroundColor: "#0073ce", spanGaps: false
+            }]
+          },
+          options: onsetChartOptions(
+            { minLabel: "niska", midLabel: "średnia", maxLabel: "wysoka" },
+            heightBounds,
+            profile
+          )
+        }));
+      }
+
+      function renderOnsetTable(profile) {
+        DOM.onsetResultBody.innerHTML = profile.map(point => {
+          const c = point.counts;
+          return `<tr>
+            <td><b>${escapeHtml(point.label)}</b></td>
+            <td>${point.observations}</td>
+            <td>P ${pct(c.front, c.total)} · Ś ${pct(c.central, c.total)} · T ${pct(c.back, c.total)}</td>
+            <td>W ${pct(c.high, c.total)} · Śr ${pct(c.mid, c.total)} · N ${pct(c.low, c.total)}</td>
+            <td>${fmtScore(point.fb)}</td>
+            <td>${fmtScore(point.height)}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      function clauseChartOptions(labels, bounds, profile) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const index = items?.[0]?.dataIndex;
+                  const point = Number.isInteger(index) ? profile[index] : null;
+                  if (!point) return "";
+                  return point.fromEnd === 1
+                    ? "−1: ostatnia sylaba"
+                    : `−${point.fromEnd}: ${point.fromEnd}. sylaba od końca`;
+                },
+                label(ctx) {
+                  const y = Number(ctx.raw);
+                  return Number.isFinite(y) ? ` profil: ${y >= 0 ? "+" : ""}${y.toFixed(3)}` : " brak danych";
+                },
+                afterLabel(ctx) {
+                  const point = profile[ctx.dataIndex];
+                  return ` zdań: ${point?.observations ?? 0}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: "pozycja sylaby liczona od końca zdania (−1 = ostatnia)" },
+              grid: { display: false }
+            },
+            y: {
+              min: bounds.min, max: bounds.max,
+              ticks: {
+                stepSize: bounds.stepSize,
+                callback(value) {
+                  const numeric = Number(value);
+                  if (Math.abs(numeric) < 1e-9) return `0 ${labels.midLabel}`;
+                  if (Math.abs(numeric + 1) < 1e-9) return `−1 ${labels.minLabel}`;
+                  if (Math.abs(numeric - 1) < 1e-9) return `+1 ${labels.maxLabel}`;
+                  return numeric > 0 ? `+${numeric.toFixed(1)}` : numeric.toFixed(1).replace("-", "−");
+                }
+              },
+              grid: {
+                color: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? "rgba(22,63,143,.38)" : "rgba(29,58,108,.08)",
+                lineWidth: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? 1.5 : 1
+              }
+            }
+          }
+        };
+      }
+
+      function onsetChartOptions(labels, bounds, profile) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const index = items?.[0]?.dataIndex;
+                  const point = Number.isInteger(index) ? profile[index] : null;
+                  if (!point) return "";
+                  return point.fromStart === 1
+                    ? "+1: pierwsza sylaba"
+                    : `+${point.fromStart}: ${point.fromStart}. sylaba od początku`;
+                },
+                label(ctx) {
+                  const y = Number(ctx.raw);
+                  return Number.isFinite(y) ? ` profil: ${y >= 0 ? "+" : ""}${y.toFixed(3)}` : " brak danych";
+                },
+                afterLabel(ctx) {
+                  const point = profile[ctx.dataIndex];
+                  return ` zdań: ${point?.observations ?? 0}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: "pozycja sylaby liczona od początku zdania (+1 = pierwsza)" },
+              grid: { display: false }
+            },
+            y: {
+              min: bounds.min, max: bounds.max,
+              ticks: {
+                stepSize: bounds.stepSize,
+                callback(value) {
+                  const numeric = Number(value);
+                  if (Math.abs(numeric) < 1e-9) return `0 ${labels.midLabel}`;
+                  if (Math.abs(numeric + 1) < 1e-9) return `−1 ${labels.minLabel}`;
+                  if (Math.abs(numeric - 1) < 1e-9) return `+1 ${labels.maxLabel}`;
+                  return numeric > 0 ? `+${numeric.toFixed(1)}` : numeric.toFixed(1).replace("-", "−");
+                }
+              },
+              grid: {
+                color: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? "rgba(22,63,143,.38)" : "rgba(29,58,108,.08)",
+                lineWidth: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? 1.5 : 1
+              }
+            }
+          }
+        };
+      }
+
+      function getProfileScaleBounds(values, mode) {
+        if (mode === "full") return { min: -1, max: 1, stepSize: .5 };
+
+        const finiteValues = values.filter(Number.isFinite);
+        const maxAbs = finiteValues.length ? Math.max(...finiteValues.map(Math.abs)) : 0;
+        // Domyślne zbliżenie: co najmniej ±0,5. Jeśli obserwacja wychodzi poza
+        // ten zakres, rozszerzamy go symetrycznie do najbliższej dziesiątej.
+        const extent = Math.min(1, Math.max(.5, Math.ceil((maxAbs + .025) * 10) / 10));
+        return { min: -extent, max: extent, stepSize: extent <= .6 ? .1 : .2 };
+      }
+
+      function formatScaleNumber(value) {
+        const rounded = Math.round(Number(value) * 10) / 10;
+        if (Object.is(rounded, -0)) return "0";
+        return rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1).replace("-", "−");
+      }
+
+      function updateScaleControls(fbValues, heightValues) {
+        const configs = [
+          { key: "frontBack", button: DOM.frontBackScaleToggle, note: DOM.frontBackScaleNote, values: fbValues },
+          { key: "height", button: DOM.heightScaleToggle, note: DOM.heightScaleNote, values: heightValues }
+        ];
+
+        configs.forEach(({ key, button, note, values }) => {
+          const mode = state.profileScaleMode[key];
+          const bounds = getProfileScaleBounds(values, mode);
+          if (mode === "full") {
+            button.textContent = "Przybliż skalę";
+            note.textContent = "Pełna skala −1…+1";
+            button.setAttribute("aria-pressed", "true");
+          } else {
+            button.textContent = "Pełna skala −1…+1";
+            note.textContent = `Zbliżenie: ${formatScaleNumber(bounds.min)}…${formatScaleNumber(bounds.max)}`;
+            button.setAttribute("aria-pressed", "false");
+          }
+        });
+      }
+
+      function toggleProfileScale(key) {
+        state.profileScaleMode[key] = state.profileScaleMode[key] === "full" ? "zoom" : "full";
+        if (state.analyzed.length) renderAggregateResults();
+      }
+
+      function profileChartOptions(labels, bounds) {
+        return {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${Number(ctx.raw).toFixed(3)}` } } },
+          scales: {
+            y: {
+              min: bounds.min, max: bounds.max, ticks: {
+                stepSize: bounds.stepSize, callback(value) {
+                  const numeric = Number(value);
+                  if (Math.abs(numeric) < 1e-9) return `0 ${labels.midLabel}`;
+                  if (Math.abs(numeric + 1) < 1e-9) return `−1 ${labels.minLabel}`;
+                  if (Math.abs(numeric - 1) < 1e-9) return `+1 ${labels.maxLabel}`;
+                  return numeric > 0 ? `+${numeric.toFixed(1)}` : numeric.toFixed(1).replace("-", "−");
+                }
+              }, grid: { color: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? "rgba(22,63,143,.38)" : "rgba(29,58,108,.08)", lineWidth: ctx => Math.abs(Number(ctx.tick?.value)) < 1e-9 ? 1.5 : 1 }
+            },
+            x: { grid: { display: false } }
+          }
+        };
+      }
+
+      function distributionOptions() {
+        return {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toFixed(1)}%` } } },
+          scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => `${v}%` } }, x: { grid: { display: false } } }
+        };
+      }
+
+      function destroyCharts() {
+        state.charts.forEach(c => c.destroy());
+        state.charts = [];
+      }
+
+      function exportCsv() {
+        if (!state.analyzed.length) return;
+        const header = ["nr", "zdanie", "liczba_sylab", "segment", "zakres_sylab", "jadra_sylab", "samogloski_analizowane", "przednie", "srodkowe", "tylne", "wysokie", "srednie", "niskie", "profil_przednia_tylna", "profil_niska_wysoka"];
+        const rows = [header];
+        state.analyzed.forEach(row => {
+          SEGMENTS.forEach(({ key, label }) => {
+            const s = row.segments[key], c = s.counts;
+            const zakres = s.syllableCount ? `${s.syllableStart}-${s.syllableEnd}` : "";
+            rows.push([row.number, row.text, row.syllables, label, zakres, s.fragment, c.total, c.front, c.central, c.back, c.high, c.mid, c.low, s.fbScore ?? "", s.heightScore ?? ""]);
+          });
+        });
+        const csv = rows.map(r => r.map(csvCell).join(";")).join("\n");
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "profil_foniczny_zdania.csv"; a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportPositionCsv() {
+        if (!state.analyzed.length) return;
+        const header = [
+          "nr", "zdanie", "liczba_sylab", "pozycja_od_poczatku", "pozycja_od_konca",
+          "samogloska", "samogloska_znormalizowana", "miejsce_artykulacji_kod",
+          "wysokosc_kod", "klasa_miejsca", "klasa_wysokosci"
+        ];
+        const rows = [header];
+
+        state.analyzed.forEach(row => {
+          (row.syllableObservations || []).forEach(observation => {
+            rows.push([
+              row.number, row.text, row.syllables,
+              observation.syllableIndex, -observation.fromEnd, observation.raw,
+              observation.normalized, observation.fb, observation.height,
+              observation.fbClass, observation.heightClass
+            ]);
+          });
+        });
+
+        if (rows.length === 1) {
+          setStatus("Brak danych pozycyjnych do eksportu.", true);
+          return;
+        }
+
+        const csv = rows.map(r => r.map(csvCell).join(";")).join("\n");
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "profil_foniczny_zdania_pozycje.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportControlXlsx() {
+        if (!state.analyzed.length) return;
+        if (typeof XLSX === "undefined") {
+          setStatus("Nie udało się załadować biblioteki XLSX.", true);
+          return;
+        }
+
+        const sentenceRows = state.analyzed.map(row => ({
+          "Nr": row.number,
+          "Zdanie": row.text,
+          "Liczba sylab": row.syllables,
+          "Profil sylaba po sylabie": (row.syllableObservations || [])
+            .map(observation => `${observation.raw} (${getFbClassShort(observation.fbClass)}/${getHeightClassShort(observation.heightClass)})`)
+            .join(" · ")
+        }));
+
+        const syllableRows = [];
+        state.analyzed.forEach(row => {
+          (row.syllableObservations || []).forEach(observation => {
+            syllableRows.push({
+              "Nr zdania": row.number,
+              "Zdanie": row.text,
+              "Liczba sylab w zdaniu": row.syllables,
+              "Pozycja od początku": observation.syllableIndex,
+              "Pozycja od końca": -observation.fromEnd,
+              "Samogłoska": observation.raw,
+              "Samogłoska znormalizowana": observation.normalized,
+              "Miejsce artykulacji – kod": observation.fb,
+              "Miejsce artykulacji – klasa": observation.fbClass,
+              "Wysokość – kod": observation.height,
+              "Wysokość – klasa": observation.heightClass
+            });
+          });
+        });
+
+        const workbook = XLSX.utils.book_new();
+        const sentenceSheet = XLSX.utils.json_to_sheet(sentenceRows);
+        const syllableSheet = XLSX.utils.json_to_sheet(syllableRows);
+
+        sentenceSheet["!cols"] = [
+          { wch: 8 }, { wch: 80 }, { wch: 14 }, { wch: 80 }
+        ];
+        syllableSheet["!cols"] = [
+          { wch: 10 }, { wch: 70 }, { wch: 20 }, { wch: 20 }, { wch: 18 },
+          { wch: 14 }, { wch: 24 }, { wch: 24 }, { wch: 24 }, { wch: 18 }, { wch: 22 }
+        ];
+
+        XLSX.utils.book_append_sheet(workbook, sentenceSheet, "Zdania");
+        XLSX.utils.book_append_sheet(workbook, syllableSheet, "Sylaby");
+        XLSX.writeFile(workbook, "profil_foniczny_zdania_kontrola.xlsx", { compression: true });
+      }
+
+      function clearAll() {
+        DOM.input.value = "";
+        DOM.fileInput.value = "";
+        DOM.resultBody.replaceChildren();
+        DOM.summaryGrid.replaceChildren();
+        DOM.clauseResultBody.replaceChildren();
+        DOM.onsetResultBody.replaceChildren();
+        DOM.results.classList.remove("visible");
+        DOM.csv.disabled = true;
+        DOM.positionCsv.disabled = true;
+        DOM.xlsx.disabled = true;
+        DOM.sentenceTableEndNotice.classList.remove("visible");
+        DOM.sentenceTableEndMessage.textContent = "";
+        destroyCharts();
+        state.analyzed = [];
+        setStatus("");
+      }
+
+      function setStatus(message, isError = false) {
+        DOM.status.textContent = message;
+        DOM.status.classList.toggle("error", isError);
+      }
+
+      function average(values) {
+        if (!values.length) return null;
+        return values.reduce((a, b) => a + b, 0) / values.length;
+      }
+      function safeDivide(a, b) { return b ? a / b : null; }
+      function percentage(a, b) { return b ? (a / b) * 100 : 0; }
+      function pct(a, b) { return b ? `${((a / b) * 100).toFixed(1)}%` : "–"; }
+      function fmtScore(v) { return v === null || Number.isNaN(v) ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(3)}`; }
+      function csvCell(value) { const s = String(value ?? ""); return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
+      function escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
+
+      init();
+    })();
+  </script>
+</body>
+
+</html>
